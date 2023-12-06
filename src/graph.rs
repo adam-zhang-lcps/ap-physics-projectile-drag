@@ -1,11 +1,13 @@
 use crate::physics::MotionState;
 use plotters::{
-    backend::BitMapBackend, chart::ChartBuilder, drawing::IntoDrawingArea, element::PathElement,
+    backend::{BitMapBackend, SVGBackend}, chart::ChartBuilder, drawing::IntoDrawingArea, element::PathElement,
     series::LineSeries, style::*,
 };
+use rgb::{RGBA, RGBA8};
 
-pub fn graph(with_drag: Vec<MotionState>, without_drag: Vec<MotionState>) {
-    let graph = BitMapBackend::new("output.png", (800, 600)).into_drawing_area();
+pub fn graph(with_drag: Vec<MotionState>, without_drag: Vec<MotionState>) -> Vec<RGBA8> {
+    let mut image_buffer = vec![0; 800 * 600 * 3];
+    let graph = BitMapBackend::with_buffer(&mut image_buffer, (800, 600)).into_drawing_area();
     graph.fill(&WHITE).unwrap();
 
     let (max_x, max_y) = find_maxes(&without_drag);
@@ -44,6 +46,16 @@ pub fn graph(with_drag: Vec<MotionState>, without_drag: Vec<MotionState>) {
         .draw()
         .unwrap();
     graph.present().unwrap();
+    drop(chart);
+    drop(graph);
+
+    // plotters doesn't support RGBA, but we need it for Iced
+    let mut rgba_image_buffer: Vec<RGBA8> = image_buffer
+		.chunks_exact(3)
+		.map(|chunk| RGBA8::new(chunk[0], chunk[1], chunk[2], 255))
+		.collect();
+
+    rgba_image_buffer
 }
 
 fn find_maxes(states: &Vec<MotionState>) -> (f64, f64) {

@@ -1,8 +1,11 @@
-mod physics;
 mod graph;
+mod gui;
+mod physics;
 
-use physics::*;
 use graph::*;
+use gui::*;
+use iced::{Application, Settings};
+use physics::*;
 use std::io;
 
 fn main() {
@@ -46,7 +49,16 @@ fn main() {
     let simulation = simulate_motion(parameters);
     let no_drag_simulation = simulate_motion(no_drag);
 
-    graph(simulation, no_drag_simulation);
+    let image_buffer = graph(simulation, no_drag_simulation);
+
+    Gui::run(Settings {
+        window: iced::window::Settings {
+            size: (800, 600),
+            ..iced::window::Settings::default()
+        },
+        flags: image_buffer,
+        ..Settings::default()
+    }).unwrap();
 }
 
 fn prompt_number(prompt: &str) -> f64 {
