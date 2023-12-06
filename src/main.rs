@@ -1,10 +1,8 @@
 mod physics;
+mod graph;
 
 use physics::*;
-use plotters::{
-    backend::BitMapBackend, chart::ChartBuilder, drawing::IntoDrawingArea, series::LineSeries,
-    style::*, element::PathElement,
-};
+use graph::*;
 use std::io;
 
 fn main() {
@@ -48,43 +46,7 @@ fn main() {
     let simulation = simulate_motion(parameters);
     let no_drag_simulation = simulate_motion(no_drag);
 
-    let graph = BitMapBackend::new("output.png", (800, 600)).into_drawing_area();
-    graph.fill(&WHITE).unwrap();
-    let mut chart = ChartBuilder::on(&graph)
-        .margin(5)
-        .build_cartesian_2d(0.0..260.0, 0.0..30.0)
-        .unwrap();
-
-    chart.configure_mesh().draw().unwrap();
-
-    chart
-        .draw_series(LineSeries::new(
-            simulation
-                .iter()
-                .map(|state| (state.position.x, state.position.y)),
-            &MAGENTA,
-        ))
-        .unwrap()
-        .label("With drag")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &MAGENTA));
-    chart
-        .draw_series(LineSeries::new(
-            no_drag_simulation
-                .iter()
-                .map(|state| (state.position.x, state.position.y)),
-            &BLUE,
-        ))
-        .unwrap()
-        .label("Without drag")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
-
-    chart
-        .configure_series_labels()
-        .background_style(&WHITE.mix(0.8))
-        .border_style(&BLACK)
-        .draw()
-        .unwrap();
-    graph.present().unwrap();
+    graph(simulation, no_drag_simulation);
 }
 
 fn prompt_number(prompt: &str) -> f64 {
