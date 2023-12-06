@@ -2,6 +2,13 @@ mod physics;
 use std::io;
 
 use physics::*;
+use plotters::{
+    backend::BitMapBackend,
+    chart::ChartBuilder,
+    drawing::IntoDrawingArea,
+    series::LineSeries,
+    style::{Color, BLACK, RED, WHITE},
+};
 
 fn main() {
     let cross_area = prompt_number("Cross-sectional area (m^2)");
@@ -33,11 +40,32 @@ fn main() {
     );
 
     let simulation = simulate_motion(parameters);
-    for state in simulation {
-        let position = state.position;
 
-        println!("{},{}", position.x, position.y);
-    }
+    let graph = BitMapBackend::new("output.png", (800, 600)).into_drawing_area();
+    graph.fill(&WHITE).unwrap();
+    let mut chart = ChartBuilder::on(&graph)
+        .margin(5)
+        .build_cartesian_2d(0.0..260.0, 0.0..30.0)
+        .unwrap();
+
+    chart.configure_mesh().draw().unwrap();
+
+    chart
+        .draw_series(LineSeries::new(
+            simulation
+                .iter()
+                .map(|state| (state.position.x, state.position.y)),
+            &RED,
+        ))
+        .unwrap();
+
+    chart
+        .configure_series_labels()
+        .background_style(&WHITE.mix(0.8))
+        .border_style(&BLACK)
+        .draw()
+        .unwrap();
+    graph.present().unwrap();
 }
 
 fn prompt_number(prompt: &str) -> f64 {
