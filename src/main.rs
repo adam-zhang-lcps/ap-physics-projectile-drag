@@ -1,14 +1,11 @@
 mod physics;
-use std::io;
 
 use physics::*;
 use plotters::{
-    backend::BitMapBackend,
-    chart::ChartBuilder,
-    drawing::IntoDrawingArea,
-    series::LineSeries,
-    style::{Color, BLACK, RED, WHITE},
+    backend::BitMapBackend, chart::ChartBuilder, drawing::IntoDrawingArea, series::LineSeries,
+    style::*, element::PathElement,
 };
+use std::io;
 
 fn main() {
     let cross_area = prompt_number("Cross-sectional area (m^2)");
@@ -38,8 +35,18 @@ fn main() {
         initial_conditions,
         ending_time,
     );
+    let no_drag = Parameters::new(
+        0.0,
+        0.0,
+        0.0,
+        mass,
+        delta_time,
+        initial_conditions,
+        ending_time,
+    );
 
     let simulation = simulate_motion(parameters);
+    let no_drag_simulation = simulate_motion(no_drag);
 
     let graph = BitMapBackend::new("output.png", (800, 600)).into_drawing_area();
     graph.fill(&WHITE).unwrap();
@@ -55,9 +62,21 @@ fn main() {
             simulation
                 .iter()
                 .map(|state| (state.position.x, state.position.y)),
-            &RED,
+            &MAGENTA,
         ))
-        .unwrap();
+        .unwrap()
+        .label("With drag")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &MAGENTA));
+    chart
+        .draw_series(LineSeries::new(
+            no_drag_simulation
+                .iter()
+                .map(|state| (state.position.x, state.position.y)),
+            &BLUE,
+        ))
+        .unwrap()
+        .label("Without drag")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
 
     chart
         .configure_series_labels()
