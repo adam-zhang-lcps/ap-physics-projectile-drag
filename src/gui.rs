@@ -1,15 +1,18 @@
-use std::collections::HashMap;
+use std::{
+    iter::repeat_with,
+    ops::{Index, IndexMut},
+};
 
 use iced::{
-    widget::{self, image::Handle, row},
-    Application, Color, Command, Element, Length, Renderer,
+    widget::{self, image::Handle},
+    Application, Command, Element, Length, Renderer,
 };
 use rgb::RGBA8;
 
 use crate::{graph::graph, physics::*};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum TextFields {
+pub enum TextField {
     CrossArea,
     FluidDensity,
     DragCoefficient,
@@ -21,14 +24,28 @@ pub enum TextFields {
     EndingTime,
 }
 
+impl Index<TextField> for [String; 9] {
+    type Output = String;
+
+    fn index(&self, index: TextField) -> &Self::Output {
+        &self[index as usize]
+    }
+}
+
+impl IndexMut<TextField> for [String; 9] {
+    fn index_mut(&mut self, index: TextField) -> &mut Self::Output {
+        &mut self[index as usize]
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Message {
-    TextChanged(TextFields, String),
+    TextChanged(TextField, String),
 }
 
 pub struct Gui {
     image: Option<Vec<RGBA8>>,
-    text_fields: HashMap<TextFields, String>,
+    text_fields: [String; 9],
 }
 
 impl Application for Gui {
@@ -44,7 +61,11 @@ impl Application for Gui {
         (
             Self {
                 image: None,
-                text_fields: HashMap::new(),
+                text_fields: repeat_with(String::new)
+                    .take(9)
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap(),
             },
             Command::none(),
         )
@@ -56,48 +77,33 @@ impl Application for Gui {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            Message::TextChanged(field, s) => *self.text_fields.entry(field).or_insert(String::new()) = s,
+            Message::TextChanged(field, s) => self.text_fields[field as usize] = s,
         };
 
-        let parameters = (|| {
-            Some(Parameters::new(
-                self.text_fields.get(&TextFields::CrossArea)?.parse().ok()?,
-                self.text_fields
-                    .get(&TextFields::FluidDensity)?
-                    .parse()
-                    .ok()?,
-                self.text_fields
-                    .get(&TextFields::DragCoefficient)?
-                    .parse()
-                    .ok()?,
-                self.text_fields.get(&TextFields::Mass)?.parse().ok()?,
+        let parameters: Result<_, std::num::ParseFloatError> = (|| {
+            Ok(Parameters::new(
+                self.text_fields[TextField::CrossArea].parse()?,
+                self.text_fields[TextField::FluidDensity].parse()?,
+                self.text_fields[TextField::DragCoefficient].parse()?,
+                self.text_fields[TextField::Mass].parse()?,
                 0.001,
                 MotionState {
                     position: Vec2 {
-                        x: self.text_fields.get(&TextFields::InitialX)?.parse().ok()?,
-                        y: self.text_fields.get(&TextFields::InitialY)?.parse().ok()?,
+                        x: self.text_fields[TextField::InitialX].parse()?,
+                        y: self.text_fields[TextField::InitialY].parse()?,
                     },
                     velocity: Vec2::from_magnitude_angle(
-                        self.text_fields
-                            .get(&TextFields::InitialVelocity)?
-                            .parse()
-                            .ok()?,
-                        self.text_fields
-                            .get(&TextFields::InitialAngle)?
-                            .parse()
-                            .ok()?,
+                        self.text_fields[TextField::InitialVelocity].parse()?,
+                        self.text_fields[TextField::InitialAngle].parse()?,
                     ),
                     acceleration: Vec2 { x: 0.0, y: 0.0 },
                     time: 0.0,
                 },
-                self.text_fields
-                    .get(&TextFields::EndingTime)?
-                    .parse()
-                    .ok()?,
+                self.text_fields[TextField::EndingTime].parse()?,
             ))
         })();
 
-        if let Some(parameters) = parameters {
+        if let Ok(parameters) = parameters {
             let motion = simulate_motion(parameters);
             let motion_no_drag = simulate_motion(Parameters {
                 drag_coefficient: 0.0,
@@ -113,75 +119,48 @@ impl Application for Gui {
         let inputs: Vec<Element<_>> = vec![
             widget::text_input(
                 "Cross-sectional area",
-                self.text_fields
-                    .get(&TextFields::CrossArea)
-                    .map_or("", String::as_str),
+                self.text_fields[TextField::CrossArea].as_str(),
             )
-            .on_input(|s| Message::TextChanged(TextFields::CrossArea, s))
+            .on_input(|s| Message::TextChanged(TextField::CrossArea, s))
             .into(),
             widget::text_input(
                 "Fluid density",
-                self.text_fields
-                    .get(&TextFields::FluidDensity)
-                    .map_or("", String::as_str),
+                self.text_fields[TextField::FluidDensity].as_str(),
             )
-            .on_input(|s| Message::TextChanged(TextFields::FluidDensity, s))
+            .on_input(|s| Message::TextChanged(TextField::FluidDensity, s))
             .into(),
             widget::text_input(
                 "Drag coefficient",
-                self.text_fields
-                    .get(&TextFields::DragCoefficient)
-                    .map_or("", String::as_str),
+                self.text_fields[TextField::DragCoefficient].as_str(),
             )
-            .on_input(|s| Message::TextChanged(TextFields::DragCoefficient, s))
+            .on_input(|s| Message::TextChanged(TextField::DragCoefficient, s))
             .into(),
-            widget::text_input(
-                "Mass",
-                self.text_fields
-                    .get(&TextFields::Mass)
-                    .map_or("", String::as_str),
-            )
-            .on_input(|s| Message::TextChanged(TextFields::Mass, s))
-            .into(),
+            widget::text_input("Mass", self.text_fields[TextField::Mass].as_str())
+                .on_input(|s| Message::TextChanged(TextField::Mass, s))
+                .into(),
             widget::text_input(
                 "Initial velocity",
-                self.text_fields
-                    .get(&TextFields::InitialVelocity)
-                    .map_or("", String::as_str),
+                self.text_fields[TextField::InitialVelocity].as_str(),
             )
-            .on_input(|s| Message::TextChanged(TextFields::InitialVelocity, s))
+            .on_input(|s| Message::TextChanged(TextField::InitialVelocity, s))
             .into(),
             widget::text_input(
                 "Initial angle",
-                self.text_fields
-                    .get(&TextFields::InitialAngle)
-                    .map_or("", String::as_str),
+                self.text_fields[TextField::InitialAngle].as_str(),
             )
-            .on_input(|s| Message::TextChanged(TextFields::InitialAngle, s))
+            .on_input(|s| Message::TextChanged(TextField::InitialAngle, s))
             .into(),
-            widget::text_input(
-                "Initial x",
-                self.text_fields
-                    .get(&TextFields::InitialX)
-                    .map_or("", String::as_str),
-            )
-            .on_input(|s| Message::TextChanged(TextFields::InitialX, s))
-            .into(),
-            widget::text_input(
-                "Initial y",
-                self.text_fields
-                    .get(&TextFields::InitialY)
-                    .map_or("", String::as_str),
-            )
-            .on_input(|s| Message::TextChanged(TextFields::InitialY, s))
-            .into(),
+            widget::text_input("Initial x", self.text_fields[TextField::InitialX].as_str())
+                .on_input(|s| Message::TextChanged(TextField::InitialX, s))
+                .into(),
+            widget::text_input("Initial y", self.text_fields[TextField::InitialY].as_str())
+                .on_input(|s| Message::TextChanged(TextField::InitialY, s))
+                .into(),
             widget::text_input(
                 "Ending time",
-                self.text_fields
-                    .get(&TextFields::EndingTime)
-                    .map_or("", String::as_str),
+                self.text_fields[TextField::EndingTime].as_str(),
             )
-            .on_input(|s| Message::TextChanged(TextFields::EndingTime, s))
+            .on_input(|s| Message::TextChanged(TextField::EndingTime, s))
             .into(),
         ];
         let inputs = widget::column(inputs).width(Length::FillPortion(1)).into();
