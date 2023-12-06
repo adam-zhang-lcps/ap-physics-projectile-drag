@@ -4,8 +4,8 @@ use std::{
 };
 
 use iced::{
-    widget::{self, image::Handle},
-    Application, Command, Element, Length, Renderer,
+    widget::{self, image::Handle, row},
+    Alignment, Application, Command, Element, Length, Renderer,
 };
 use rgb::RGBA8;
 
@@ -117,53 +117,21 @@ impl Application for Gui {
 
     fn view(&self) -> iced::Element<'_, Self::Message, Renderer<Self::Theme>> {
         let inputs: Vec<Element<_>> = vec![
-            widget::text_input(
-                "Cross-sectional area",
-                self.text_fields[TextField::CrossArea].as_str(),
-            )
-            .on_input(|s| Message::TextChanged(TextField::CrossArea, s))
-            .into(),
-            widget::text_input(
-                "Fluid density",
-                self.text_fields[TextField::FluidDensity].as_str(),
-            )
-            .on_input(|s| Message::TextChanged(TextField::FluidDensity, s))
-            .into(),
-            widget::text_input(
-                "Drag coefficient",
-                self.text_fields[TextField::DragCoefficient].as_str(),
-            )
-            .on_input(|s| Message::TextChanged(TextField::DragCoefficient, s))
-            .into(),
-            widget::text_input("Mass", self.text_fields[TextField::Mass].as_str())
-                .on_input(|s| Message::TextChanged(TextField::Mass, s))
-                .into(),
-            widget::text_input(
-                "Initial velocity",
-                self.text_fields[TextField::InitialVelocity].as_str(),
-            )
-            .on_input(|s| Message::TextChanged(TextField::InitialVelocity, s))
-            .into(),
-            widget::text_input(
-                "Initial angle",
-                self.text_fields[TextField::InitialAngle].as_str(),
-            )
-            .on_input(|s| Message::TextChanged(TextField::InitialAngle, s))
-            .into(),
-            widget::text_input("Initial x", self.text_fields[TextField::InitialX].as_str())
-                .on_input(|s| Message::TextChanged(TextField::InitialX, s))
-                .into(),
-            widget::text_input("Initial y", self.text_fields[TextField::InitialY].as_str())
-                .on_input(|s| Message::TextChanged(TextField::InitialY, s))
-                .into(),
-            widget::text_input(
-                "Ending time",
-                self.text_fields[TextField::EndingTime].as_str(),
-            )
-            .on_input(|s| Message::TextChanged(TextField::EndingTime, s))
-            .into(),
+            self.make_input("Cross-sectional area", TextField::CrossArea),
+            self.make_input("Fluid density", TextField::FluidDensity),
+            self.make_input("Drag coefficient", TextField::DragCoefficient),
+            self.make_input("Mass", TextField::Mass),
+            self.make_input("Initial velocity", TextField::InitialVelocity),
+            self.make_input("Initial angle", TextField::InitialAngle),
+            self.make_input("Initial x", TextField::InitialX),
+            self.make_input("Initial y", TextField::InitialY),
+            self.make_input("Ending time", TextField::EndingTime),
         ];
-        let inputs = widget::column(inputs).width(Length::FillPortion(1)).into();
+        let inputs = widget::column(inputs)
+            .width(Length::FillPortion(1))
+            .spacing(2)
+            .padding(10)
+            .into();
 
         let image = match self.image {
             Some(ref image) => {
@@ -179,5 +147,24 @@ impl Application for Gui {
         };
 
         widget::row(vec![inputs, image]).into()
+    }
+}
+
+impl Gui {
+    fn make_input(
+        &self,
+        label: &str,
+        field: TextField,
+    ) -> Element<'_, Message, Renderer<iced::Theme>> {
+        row![
+            widget::text(format!("{}:", label)).width(Length::FillPortion(1)),
+            widget::text_input(label, &self.text_fields[field])
+                .on_input(move |s| Message::TextChanged(field, s))
+                .width(Length::FillPortion(2))
+        ]
+        .width(Length::Fill)
+        .align_items(Alignment::Center)
+        .spacing(10)
+        .into()
     }
 }
