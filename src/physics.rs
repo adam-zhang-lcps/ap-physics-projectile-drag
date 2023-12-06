@@ -1,6 +1,6 @@
 const GRAVITY: f64 = 9.81;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Vec2 {
     pub x: f64,
     pub y: f64,
@@ -23,7 +23,7 @@ impl Vec2 {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct MotionState {
     pub position: Vec2,
     pub velocity: Vec2,
@@ -31,7 +31,7 @@ pub struct MotionState {
     pub time: f64,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Parameters {
     pub cross_area: f64,
     pub fluid_density: f64,

@@ -56,7 +56,6 @@ fn main() {
             size: (800, 600),
             ..iced::window::Settings::default()
         },
-        flags: image_buffer,
         ..Settings::default()
     }).unwrap();
 }
