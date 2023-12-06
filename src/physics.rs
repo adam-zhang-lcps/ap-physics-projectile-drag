@@ -1,6 +1,6 @@
 const GRAVITY: f64 = 9.81;
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vec2 {
     pub x: f64,
     pub y: f64,
@@ -18,12 +18,16 @@ impl Vec2 {
         }
     }
 
-    fn magnitude(&self) -> f64 {
+    pub fn magnitude(&self) -> f64 {
         (self.x.powi(2) + self.y.powi(2)).sqrt()
+    }
+
+    pub fn angle(&self) -> f64 {
+        self.y.atan2(self.x).to_degrees()
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct MotionState {
     pub position: Vec2,
     pub velocity: Vec2,
@@ -31,7 +35,7 @@ pub struct MotionState {
     pub time: f64,
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct Parameters {
     pub cross_area: f64,
     pub fluid_density: f64,
@@ -40,7 +44,7 @@ pub struct Parameters {
     pub delta_time: f64,
     pub initial_conditions: MotionState,
     pub ending_time: f64,
-    drag_proportion: f64,
+    pub drag_proportion: f64,
 }
 
 impl Parameters {
