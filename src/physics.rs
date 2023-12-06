@@ -18,12 +18,8 @@ impl Vec2 {
         }
     }
 
-    pub fn magnitude(&self) -> f64 {
+    fn magnitude(&self) -> f64 {
         (self.x.powi(2) + self.y.powi(2)).sqrt()
-    }
-
-    pub fn angle(&self) -> f64 {
-        self.y.atan2(self.x).to_degrees()
     }
 }
 

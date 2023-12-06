@@ -88,10 +88,10 @@ impl Application for Gui {
                 self.text_fields[TextField::Mass].parse()?,
                 0.001,
                 MotionState {
-                    position: Vec2 {
-                        x: self.text_fields[TextField::InitialX].parse()?,
-                        y: self.text_fields[TextField::InitialY].parse()?,
-                    },
+                    position: Vec2::new(
+                        self.text_fields[TextField::InitialX].parse()?,
+                        self.text_fields[TextField::InitialY].parse()?,
+                    ),
                     velocity: Vec2::from_magnitude_angle(
                         self.text_fields[TextField::InitialVelocity].parse()?,
                         self.text_fields[TextField::InitialAngle].parse()?,

@@ -4,7 +4,6 @@ mod physics;
 
 use gui::*;
 use iced::{Application, Settings, window};
-use std::io;
 
 fn main() {
     Gui::run(Settings {
