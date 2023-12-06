@@ -1,9 +1,9 @@
 use crate::physics::MotionState;
 use plotters::{
-    backend::{BitMapBackend, SVGBackend}, chart::ChartBuilder, drawing::IntoDrawingArea, element::PathElement,
+    backend::BitMapBackend, chart::ChartBuilder, drawing::IntoDrawingArea, element::PathElement,
     series::LineSeries, style::*,
 };
-use rgb::{RGBA, RGBA8};
+use rgb::{AsPixels, RGB8, RGBA8};
 
 pub fn graph(with_drag: Vec<MotionState>, without_drag: Vec<MotionState>) -> Vec<RGBA8> {
     let mut image_buffer = vec![0; 800 * 600 * 3];
@@ -50,10 +50,11 @@ pub fn graph(with_drag: Vec<MotionState>, without_drag: Vec<MotionState>) -> Vec
     drop(graph);
 
     // plotters doesn't support RGBA, but we need it for Iced
-    let mut rgba_image_buffer: Vec<RGBA8> = image_buffer
-		.chunks_exact(3)
-		.map(|chunk| RGBA8::new(chunk[0], chunk[1], chunk[2], 255))
-		.collect();
+    let pixels: Vec<RGB8> = image_buffer.as_pixels().to_vec();
+    let rgba_image_buffer: Vec<RGBA8> = pixels
+        .into_iter()
+        .map(RGBA8::from)
+        .collect();
 
     rgba_image_buffer
 }
