@@ -106,7 +106,7 @@ impl Application for Gui {
         if let Ok(parameters) = parameters {
             let motion = simulate_motion(parameters);
             let motion_no_drag = simulate_motion(Parameters {
-                drag_coefficient: 0.0,
+                drag_proportion: 0.0,
                 ..parameters
             });
             self.image = Some(graph(motion, motion_no_drag));
