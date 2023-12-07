@@ -5,9 +5,9 @@ use plotters::{
 };
 use rgb::{AsPixels, RGB8, RGBA8};
 
-pub fn graph(with_drag: Vec<MotionState>, without_drag: Vec<MotionState>) -> Vec<RGBA8> {
-    let mut image_buffer = vec![0; 800 * 600 * 3];
-    let graph = BitMapBackend::with_buffer(&mut image_buffer, (800, 600)).into_drawing_area();
+pub fn graph(with_drag: &Vec<MotionState>, without_drag: &Vec<MotionState>, size: (u32, u32)) -> Vec<RGBA8> {
+    let mut image_buffer = vec![0; size.0 as usize * size.1 as usize * 3];
+    let graph = BitMapBackend::with_buffer(&mut image_buffer, size).into_drawing_area();
     graph.fill(&WHITE).unwrap();
 
     let (max_x, max_y) = find_maxes(&without_drag);

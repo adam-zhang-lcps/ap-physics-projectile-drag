@@ -1,7 +1,7 @@
 use crate::{graph::graph, physics::*};
 use iced::{
     widget::{self, image::Handle, row},
-    Alignment, Application, Command, Element, Length, Renderer,
+    Alignment, Application, Command, Element, Length, Renderer, Size,
 };
 use rgb::RGBA8;
 use std::{
@@ -42,7 +42,7 @@ pub enum Message {
 }
 
 pub struct Gui {
-    image: Option<Vec<RGBA8>>,
+    simulations: Option<(Vec<MotionState>, Vec<MotionState>)>,
     text_fields: [String; 9],
 }
 
@@ -58,7 +58,7 @@ impl Application for Gui {
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
         (
             Self {
-                image: None,
+                simulations: None,
                 text_fields: repeat_with(String::new)
                     .take(9)
                     .collect::<Vec<_>>()
@@ -107,7 +107,7 @@ impl Application for Gui {
                 drag_proportion: 0.0,
                 ..parameters
             });
-            self.image = Some(graph(motion, motion_no_drag));
+            self.simulations = Some((motion, motion_no_drag));
         }
 
         Command::none()
@@ -131,18 +131,23 @@ impl Application for Gui {
             .padding(10)
             .into();
 
-        let image = match self.image {
-            Some(ref image) => {
-                let image_buffer_flattened: Vec<u8> = image
-                    .iter()
-                    .cloned()
-                    .flat_map(|rgba| Into::<[u8; 4]>::into(rgba))
-                    .collect();
-                let handle = Handle::from_pixels(800, 600, image_buffer_flattened);
-                widget::image(handle).width(Length::FillPortion(2)).into()
+        let image = widget::container(widget::responsive(|size| {
+            let size = (size.width as u32, size.height as u32);
+            match self.generate_image(size) {
+                Some(image) => {
+                    let image_buffer_flattened: Vec<u8> = image
+                        .iter()
+                        .cloned()
+                        .flat_map(|rgba| Into::<[u8; 4]>::into(rgba))
+                        .collect();
+                    let handle = Handle::from_pixels(size.0, size.1, image_buffer_flattened);
+                    widget::image(handle).into()
+                }
+                None => widget::horizontal_space(Length::Fill).into(),
             }
-            None => widget::horizontal_space(Length::FillPortion(2)).into(),
-        };
+        }))
+        .width(Length::FillPortion(2))
+        .into();
 
         widget::row(vec![inputs, image]).into()
     }
@@ -164,5 +169,17 @@ impl Gui {
         .align_items(Alignment::Center)
         .spacing(10)
         .into()
+    }
+
+    fn generate_image(&self, size: (u32, u32)) -> Option<Vec<RGBA8>> {
+        if let Some(ref simulations) = self.simulations {
+            Some(graph(
+                &simulations.0,
+                &simulations.1,
+                (size.0, size.1),
+            ))
+        } else {
+            None
+        }
     }
 }
