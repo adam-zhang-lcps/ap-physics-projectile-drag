@@ -39,11 +39,13 @@ impl IndexMut<TextField> for [String; 9] {
 #[derive(Debug, Clone)]
 pub enum Message {
     TextChanged(TextField, String),
+    DeltaTimeChanged(i32),
 }
 
 pub struct Gui {
     simulations: Option<(Vec<MotionState>, Vec<MotionState>)>,
     text_fields: [String; 9],
+    delta_time_scale: i32,
 }
 
 impl Application for Gui {
@@ -64,6 +66,7 @@ impl Application for Gui {
                     .collect::<Vec<_>>()
                     .try_into()
                     .unwrap(),
+                delta_time_scale: 3,
             },
             Command::none(),
         )
@@ -76,6 +79,7 @@ impl Application for Gui {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Message::TextChanged(field, s) => self.text_fields[field as usize] = s,
+            Message::DeltaTimeChanged(scale) => self.delta_time_scale = scale,
         };
 
         let parameters: Result<_, std::num::ParseFloatError> = (|| {
@@ -84,7 +88,7 @@ impl Application for Gui {
                 self.text_fields[TextField::FluidDensity].parse()?,
                 self.text_fields[TextField::DragCoefficient].parse()?,
                 self.text_fields[TextField::Mass].parse()?,
-                0.001,
+                10f64.powi(-self.delta_time_scale),
                 MotionState {
                     position: Vec2::new(
                         self.text_fields[TextField::InitialX].parse()?,
@@ -124,6 +128,16 @@ impl Application for Gui {
             self.make_input("Initial x", TextField::InitialX),
             self.make_input("Initial y", TextField::InitialY),
             self.make_input("Ending time", TextField::EndingTime),
+            row![
+                widget::text(format!(
+                    "Time scale ({}):",
+                    10f64.powi(-self.delta_time_scale)
+                ))
+                .width(Length::FillPortion(1)),
+                widget::slider(0..=5, self.delta_time_scale, Message::DeltaTimeChanged)
+                    .width(Length::FillPortion(2))
+            ]
+            .into(),
         ];
         let inputs = widget::column(inputs)
             .width(Length::FillPortion(1))
