@@ -1,15 +1,13 @@
-use std::{
-    iter::repeat_with,
-    ops::{Index, IndexMut},
-};
-
+use crate::{graph::graph, physics::*};
 use iced::{
     widget::{self, image::Handle, row},
     Alignment, Application, Command, Element, Length, Renderer,
 };
 use rgb::RGBA8;
-
-use crate::{graph::graph, physics::*};
+use std::{
+    iter::repeat_with,
+    ops::{Index, IndexMut},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TextField {
@@ -72,7 +70,7 @@ impl Application for Gui {
     }
 
     fn title(&self) -> String {
-        "Physics".to_string()
+        "Drag Simulation".to_string()
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {

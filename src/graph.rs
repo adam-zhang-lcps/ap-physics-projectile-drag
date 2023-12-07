@@ -13,10 +13,18 @@ pub fn graph(with_drag: Vec<MotionState>, without_drag: Vec<MotionState>) -> Vec
     let (max_x, max_y) = find_maxes(&without_drag);
     let mut chart = ChartBuilder::on(&graph)
         .margin(5)
+        .x_label_area_size(40)
+        .y_label_area_size(50)
         .build_cartesian_2d(0.0..max_x * 1.1, 0.0..max_y * 1.1)
         .unwrap();
 
-    chart.configure_mesh().draw().unwrap();
+    chart
+        .configure_mesh()
+        .axis_desc_style(TextStyle::from(("sans-serif", 20)))
+        .x_desc("Horizontal Position")
+        .y_desc("Vertical Position")
+        .draw()
+        .unwrap();
 
     chart
         .draw_series(LineSeries::new(
@@ -51,10 +59,7 @@ pub fn graph(with_drag: Vec<MotionState>, without_drag: Vec<MotionState>) -> Vec
 
     // plotters doesn't support RGBA, but we need it for Iced
     let pixels: Vec<RGB8> = image_buffer.as_pixels().to_vec();
-    let rgba_image_buffer: Vec<RGBA8> = pixels
-        .into_iter()
-        .map(RGBA8::from)
-        .collect();
+    let rgba_image_buffer: Vec<RGBA8> = pixels.into_iter().map(RGBA8::from).collect();
 
     rgba_image_buffer
 }
