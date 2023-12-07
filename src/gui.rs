@@ -1,7 +1,7 @@
 use crate::{graph::graph, physics::*};
 use iced::{
     widget::{self, image::Handle, row},
-    Alignment, Application, Command, Element, Length, Renderer, Size,
+    Alignment, Application, Command, Element, Length, Renderer,
 };
 use rgb::RGBA8;
 use std::{
@@ -9,7 +9,7 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy)]
 pub enum TextField {
     CrossArea,
     FluidDensity,
@@ -173,11 +173,7 @@ impl Gui {
 
     fn generate_image(&self, size: (u32, u32)) -> Option<Vec<RGBA8>> {
         if let Some(ref simulations) = self.simulations {
-            Some(graph(
-                &simulations.0,
-                &simulations.1,
-                (size.0, size.1),
-            ))
+            Some(graph(&simulations.0, &simulations.1, (size.0, size.1)))
         } else {
             None
         }
