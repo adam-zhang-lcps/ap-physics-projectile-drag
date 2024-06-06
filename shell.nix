@@ -2,6 +2,6 @@
 with pkgs;
   mkShell {
     nativeBuildInputs = [rustc cargo cmake];
-    buildInputs = [rust-analyzer rustfmt pkg-config fontconfig mold];
+    buildInputs = [rustfmt pkg-config fontconfig];
     LD_LIBRARY_PATH = lib.makeLibraryPath [wayland libxkbcommon freetype fontconfig];
   }
