@@ -1,0 +1,12 @@
+#+title: Projectile Motion Drag Simulation
+#+author: Adam Zhang
+
+Simulating projectile motion with drag and displaying the results. Extra credit assignment for my AP Physics C: Mechanics class. Built using [[https://www.rust-lang.org/][Rust]] and [[https://iced.rs/][Iced]] 🔥.
+
+[[file:screenshot.png]]
+
+* Building
+To build, you will need the [[https://www.rust-lang.org/learn/get-started][Rust toolchain]] installed, as well as the [[https://github.com/iced-rs/iced/blob/master/DEPENDENCIES.md][dependencies for Iced]]. Then, building should be as simple as any other Rust project:
+#+begin_src sh
+cargo build --release
+#+end_src
