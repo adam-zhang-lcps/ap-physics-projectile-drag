@@ -6,7 +6,14 @@ Simulating projectile motion with drag and displaying the results. Extra credit 
 [[file:screenshot.png]]
 
 * Building
+*Note: there is no guarantee that this project works at all! If it breaks, you get to keep both pieces ❤️.*
+
 To build, you will need the [[https://www.rust-lang.org/learn/get-started][Rust toolchain]] installed, as well as the [[https://github.com/iced-rs/iced/blob/master/DEPENDENCIES.md][dependencies for Iced]]. Then, building should be as simple as any other Rust project:
 #+begin_src sh
 cargo build --release
 #+end_src
+
+* Notes
+This project was written very hastily, and thus the code quality is not great. Notably:
++ Generation of the graph is not asynchronous, so changes freeze the UI until the calculations are done.
++ Input fields are not numeric.
